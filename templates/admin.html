@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Fake Certificate Recognition System</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-certificate"></i>
+                <span>Certificate Validator</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="/">Home</a></li>
+                <li><a href="/upload">Upload</a></li>
+                <li><a href="/admin">Admin</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="admin-section">
+            <div class="container">
+                <h1><i class="fas fa-chart-line"></i> Admin Dashboard</h1>
+                <p class="section-subtitle">Monitor certificate verification and fraud detection activities</p>
+                
+                <!-- Statistics Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-certificate"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number">{{ total_certificates }}</div>
+                            <div class="stat-label">Total Certificates</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon verified">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number">{{ verified_certificates }}</div>
+                            <div class="stat-label">Verified</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon suspicious">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number">{{ suspicious_certificates }}</div>
+                            <div class="stat-label">Suspicious</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number">{{ fraud_detection_rate }}%</div>
+                            <div class="stat-label">Detection Rate</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Certificates Table -->
+                <div class="admin-section-card">
+                    <div class="section-header">
+                        <h2>Certificates Database</h2>
+                        <div class="section-actions">
+                            <button class="btn-secondary" onclick="refreshData()">
+                                <i class="fas fa-sync"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table class="admin-table" id="certificates-table">
+                            <thead>
+                                <tr>
+                                    <th>Certificate ID</th>
+                                    <th>Student Name</th>
+                                    <th>Roll Number</th>
+                                    <th>Institution</th>
+                                    <th>Status</th>
+                                    <th>Fraud Score</th>
+                                    <th>Upload Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for cert in certificates %}...{% endfor %}
+                                <tr>
+                                    <td colspan="8" class="no-data">No certificates found. <a href="/upload">Upload your first certificate</a></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Recent Fraud Reports -->
+                <div class="admin-section-card">
+                    <div class="section-header">
+                        <h2>Recent Fraud Reports</h2>
+                    </div>
+                    
+                    <div class="fraud-reports-container">
+                        {% for report in fraud_reports %}...{% endfor %}
+                        <div class="no-fraud-reports">
+                            <i class="fas fa-shield-alt"></i>
+                            <p>No fraud reports yet. System is monitoring for suspicious activity.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2024 Fake Certificate Recognition System. Built for security and fraud detection.</p>
+        </div>
+    </footer>
+
+    <!-- Certificate Details Modal -->
+    <div id="certificate-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Certificate Details</h3>
+                <span class="modal-close" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body" id="certificate-details">
+                <!-- Certificate details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/main.js"></script>
+    <script>
+    function viewCertificate(certificateId) {
+        const modal = document.getElementById('certificate-modal');
+        const detailsDiv = document.getElementById('certificate-details');
+        
+        detailsDiv.innerHTML = '<div class="loading">Loading certificate details...</div>';
+        modal.style.display = 'block';
+        
+        fetch(`/verify/${certificateId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    displayCertificateDetails(data);
+                } else {
+                    detailsDiv.innerHTML = `<div class="error">Error: ${data.message}</div>`;
+                }
+            })
+            .catch(error => {
+                detailsDiv.innerHTML = `<div class="error">Error loading certificate: ${error.message}</div>`;
+            });
+    }
+
+    function displayCertificateDetails(data) {
+        const cert = data.certificate;
+        const fraudScore = (data.overall_fraud_score * 100).toFixed(1);
+        const status = data.is_suspicious ? 'SUSPICIOUS' : 'VERIFIED';
+        const statusClass = data.is_suspicious ? 'suspicious' : 'verified';
+        
+        const detailsDiv = document.getElementById('certificate-details');
+        detailsDiv.innerHTML = `
+            <div class="certificate-status ${statusClass}">
+                <div class="status-header">
+                    <i class="fas ${data.is_suspicious ? 'fa-exclamation-triangle' : 'fa-check-circle'}"></i>
+                    <span class="status-text">${status}</span>
+                    <span class="fraud-score">${fraudScore}% fraud probability</span>
+                </div>
+            </div>
+            
+            <div class="certificate-info">
+                <h4>Certificate Information</h4>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>Certificate ID:</label>
+                        <span>${cert.certificate_id || 'N/A'}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Student Name:</label>
+                        <span>${cert.student_name || 'N/A'}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Roll Number:</label>
+                        <span>${cert.roll_number || 'N/A'}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Marks/Grade:</label>
+                        <span>${cert.marks || 'N/A'}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Institution:</label>
+                        <span>${cert.institution || 'N/A'}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Course:</label>
+                        <span>${cert.course || 'N/A'}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Issue Date:</label>
+                        <span>${cert.issue_date || 'N/A'}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Upload Date:</label>
+                        <span>${cert.created_at || 'N/A'}</span>
+                    </div>
+                </div>
+            </div>
+            
+            ${data.fraud_reports && data.fraud_reports.length > 0 ? `
+            <div class="fraud-analysis">
+                <h4>Fraud Analysis</h4>
+                <div class="fraud-reports">
+                    ${data.fraud_reports.map(report => `
+                        <div class="fraud-report-item">
+                            <div class="report-type">${report.fraud_type.replace(/_/g, ' ').toUpperCase()}</div>
+                            <div class="report-confidence">${(report.confidence_score * 100).toFixed(1)}% confidence</div>
+                            <div class="report-description">${report.description}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+            ` : '<div class="no-fraud">No fraud indicators detected.</div>'}
+        `;
+    }
+
+    function closeModal() {
+        document.getElementById('certificate-modal').style.display = 'none';
+    }
+
+    function refreshData() {
+        location.reload();
+    }
+
+    window.onclick = function(event) {
+        const modal = document.getElementById('certificate-modal');
+        if (event.target == modal) {
+            modal.style.display = 'none';
+        }
+    }
+    </script>
+</body>
+</html>

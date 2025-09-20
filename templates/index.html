@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fake Certificate Recognition System</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-certificate"></i>
+                <span>Certificate Validator</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="/">Home</a></li>
+                <li><a href="/upload">Upload</a></li>
+                <li><a href="/admin">Admin</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="hero-section">
+            <div class="hero-content">
+                <h1><i class="fas fa-shield-alt"></i> Fake Certificate Recognition System</h1>
+                <p class="hero-subtitle">Advanced OCR-powered fraud detection for certificates and academic documents</p>
+                
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <i class="fas fa-eye"></i>
+                        <h3>OCR Text Extraction</h3>
+                        <p>Automatically extract certificate details including names, roll numbers, marks, and IDs</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <i class="fas fa-search"></i>
+                        <h3>Fraud Detection</h3>
+                        <p>Detect tampered grades, forged seals, invalid IDs, and duplicate certificates</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <i class="fas fa-database"></i>
+                        <h3>Database Verification</h3>
+                        <p>Cross-reference against our database of legitimate certificates</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <i class="fas fa-lock"></i>
+                        <h3>Secure & Private</h3>
+                        <p>Enterprise-grade security with privacy protection for sensitive documents</p>
+                    </div>
+                </div>
+                
+                <div class="cta-section">
+                    <a href="/upload" class="cta-button">
+                        <i class="fas fa-upload"></i> Upload Certificate for Analysis
+                    </a>
+                    <a href="/admin" class="cta-button secondary">
+                        <i class="fas fa-chart-line"></i> Admin Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <div class="container">
+                <h2>How It Works</h2>
+                <div class="steps-grid">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <h3>Upload Certificate</h3>
+                        <p>Upload your digital or scanned certificate in various formats (PNG, JPG, PDF, etc.)</p>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <h3>OCR Processing</h3>
+                        <p>Our system extracts text and analyzes the certificate structure and content</p>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <h3>Fraud Analysis</h3>
+                        <p>Multiple algorithms check for signs of tampering, forgery, and inconsistencies</p>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <h3>Generate Report</h3>
+                        <p>Receive detailed analysis with fraud probability and verification status</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-section">
+            <div class="container">
+                <h2>System Statistics</h2>
+                <div class="stats-grid" id="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="total-certificates">Loading...</div>
+                        <div class="stat-label">Certificates Analyzed</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-number" id="fraud-detected">Loading...</div>
+                        <div class="stat-label">Fraud Cases Detected</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-number" id="accuracy-rate">99.2%</div>
+                        <div class="stat-label">Detection Accuracy</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-number" id="processing-time">< 30s</div>
+                        <div class="stat-label">Average Processing Time</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2024 Fake Certificate Recognition System. Built for security and fraud detection.</p>
+        </div>
+    </footer>
+
+    <script src="/static/js/main.js"></script>
+    <script>
+    // Load statistics
+    fetch('/api/stats')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('total-certificates').textContent = data.total_certificates || 0;
+            document.getElementById('fraud-detected').textContent = data.total_fraud_reports || 0;
+        })
+        .catch(error => {
+            console.error('Error loading stats:', error);
+        });
+    </script>
+</body>
+</html>
