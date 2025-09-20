@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Certificate - Fake Certificate Recognition System</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-certificate"></i>
+                <span>Certificate Validator</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="/">Home</a></li>
+                <li><a href="/upload">Upload</a></li>
+                <li><a href="/admin">Admin</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="upload-section">
+            <div class="container">
+                <h1><i class="fas fa-upload"></i> Upload Certificate for Analysis</h1>
+                <p class="section-subtitle">Upload your certificate image or PDF for comprehensive fraud detection and verification</p>
+                
+                <div class="upload-container">
+                    <form id="upload-form" class="upload-form" enctype="multipart/form-data">
+                        <div class="upload-area" id="upload-area">
+                            <div class="upload-icon">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                            </div>
+                            <div class="upload-text">
+                                <strong>Drop your certificate here or click to browse</strong>
+                                <p>Supported formats: PNG, JPG, JPEG, PDF, TIFF, BMP (Max: 10MB)</p>
+                            </div>
+                            <input type="file" id="certificate-input" name="certificate" accept=".png,.jpg,.jpeg,.pdf,.tiff,.bmp" required>
+                        </div>
+                        
+                        <div class="upload-actions">
+                            <button type="submit" class="btn-primary" id="analyze-btn">
+                                <i class="fas fa-search"></i> Analyze Certificate
+                            </button>
+                            <button type="button" class="btn-secondary" onclick="clearUpload()">
+                                <i class="fas fa-times"></i> Clear
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Loading indicator -->
+                <div id="loading-indicator" class="loading-indicator" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Analyzing certificate... This may take up to 30 seconds.</p>
+                </div>
+                
+                <!-- Results section -->
+                <div id="results-section" class="results-section" style="display: none;">
+                    <h2>Analysis Results</h2>
+                    
+                    <div class="result-summary" id="result-summary">
+                        <!-- Summary will be populated by JavaScript -->
+                    </div>
+                    
+                    <div class="results-tabs">
+                        <button class="tab-button active" onclick="showTab('extracted-data')">Extracted Data</button>
+                        <button class="tab-button" onclick="showTab('fraud-analysis')">Fraud Analysis</button>
+                        <button class="tab-button" onclick="showTab('raw-text')">Raw OCR Text</button>
+                    </div>
+                    
+                    <div class="tab-content">
+                        <div id="extracted-data" class="tab-panel active">
+                            <div class="data-grid" id="certificate-data">
+                                <!-- Certificate data will be populated by JavaScript -->
+                            </div>
+                        </div>
+                        
+                        <div id="fraud-analysis" class="tab-panel">
+                            <div id="fraud-reports">
+                                <!-- Fraud reports will be populated by JavaScript -->
+                            </div>
+                        </div>
+                        
+                        <div id="raw-text" class="tab-panel">
+                            <div class="text-content">
+                                <pre id="extracted-text-content"><!-- Raw text will be populated --></pre>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="result-actions">
+                        <button class="btn-primary" onclick="window.location.href='/admin'">
+                            <i class="fas fa-chart-line"></i> View in Admin Dashboard
+                        </button>
+                        <button class="btn-secondary" onclick="resetForm()">
+                            <i class="fas fa-redo"></i> Analyze Another Certificate
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2024 Fake Certificate Recognition System. Built for security and fraud detection.</p>
+        </div>
+    </footer>
+
+    <script src="/static/js/main.js"></script>
+    <script>
+        const uploadArea = document.getElementById('upload-area');
+        const fileInput = document.getElementById('certificate-input');
+        const uploadForm = document.getElementById('upload-form');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const resultsSection = document.getElementById('results-section');
+
+        // Drag and drop functionality
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                updateUploadArea(files[0]);
+            }
+        });
+
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                updateUploadArea(e.target.files[0]);
+            }
+        });
+
+        function updateUploadArea(file) {
+            uploadArea.querySelector('.upload-text strong').textContent = file.name;
+            uploadArea.querySelector('.upload-text p').textContent = `Size: ${(file.size / 1024 / 1024).toFixed(2)} MB`;
+            uploadArea.classList.add('has-file');
+        }
+
+        function clearUpload() {
+            fileInput.value = '';
+            uploadArea.classList.remove('has-file');
+            uploadArea.querySelector('.upload-text strong').textContent = 'Drop your certificate here or click to browse';
+            uploadArea.querySelector('.upload-text p').textContent = 'Supported formats: PNG, JPG, JPEG, PDF, TIFF, BMP (Max: 10MB)';
+            resultsSection.style.display = 'none';
+        }
+
+        function resetForm() {
+            clearUpload();
+            resultsSection.style.display = 'none';
+            loadingIndicator.style.display = 'none';
+        }
+
+        // Form submission - Demo functionality
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!fileInput.files.length) {
+                alert('Please select a certificate file to upload.');
+                return;
+            }
+            
+            loadingIndicator.style.display = 'block';
+            resultsSection.style.display = 'none';
+            
+            // Simulate processing time
+            setTimeout(() => {
+                loadingIndicator.style.display = 'none';
+                
+                // Show demo results
+                displayDemoResults();
+                resultsSection.style.display = 'block';
+            }, 3000);
+        });
+
+        function displayDemoResults() {
+            // Display summary
+            const summary = document.getElementById('result-summary');
+            summary.innerHTML = `
+                <div class="result-card status-verified">
+                    <div class="result-status">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="status-text">VERIFIED</span>
+                    </div>
+                    <div class="result-score">
+                        <span class="score-label">Fraud Probability:</span>
+                        <span class="score-value">15.0%</span>
+                    </div>
+                </div>
+            `;
+            
+            // Display extracted data
+            const certData = document.getElementById('certificate-data');
+            certData.innerHTML = `
+                <div class="data-item">
+                    <label>Certificate ID:</label>
+                    <span>CERT-2021-CS-001</span>
+                </div>
+                <div class="data-item">
+                    <label>Student Name:</label>
+                    <span>JOHN DOE</span>
+                </div>
+                <div class="data-item">
+                    <label>Roll Number:</label>
+                    <span>2021001</span>
+                </div>
+                <div class="data-item">
+                    <label>Marks/Grade:</label>
+                    <span>A (85%)</span>
+                </div>
+                <div class="data-item">
+                    <label>Institution:</label>
+                    <span>Tech University</span>
+                </div>
+                <div class="data-item">
+                    <label>Course:</label>
+                    <span>Computer Science Engineering</span>
+                </div>
+                <div class="data-item">
+                    <label>Issue Date:</label>
+                    <span>June 2021</span>
+                </div>
+            `;
+            
+            // Display fraud reports
+            const fraudReports = document.getElementById('fraud-reports');
+            fraudReports.innerHTML = `
+                <div class="fraud-report">
+                    <div class="report-header">
+                        <span class="report-type">DEMO CHECK</span>
+                        <span class="report-confidence">10.0% confidence</span>
+                    </div>
+                    <div class="report-description">This is a demo certificate for testing purposes</div>
+                </div>
+            `;
+            
+            // Display raw text
+            document.getElementById('extracted-text-content').textContent = `CERTIFICATE OF ACHIEVEMENT
+This is to certify that
+JOHN DOE
+Roll Number: 2021001
+has successfully completed the course
+Computer Science Engineering
+with Grade: A (85%)
+Certificate ID: CERT-2021-CS-001
+Date: June 2021
+Institution: Tech University`;
+        }
+
+        function showTab(tabId) {
+            // Hide all tab panels
+            document.querySelectorAll('.tab-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            
+            // Remove active class from all tab buttons
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            // Show selected tab panel
+            document.getElementById(tabId).classList.add('active');
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>
